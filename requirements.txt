@@ -1,6 +1,6 @@
 torch
 torchvision
-opencv-python
+opencv-python==4.5.3.56
 streamlit
 pillow
 matplotlib
