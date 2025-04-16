@@ -3,3 +3,5 @@ numpy
 pillow
 matplotlib
 opencv-python-headless==4.5.3.56
+torch==1.13.1
+torchvision==0.14.1
