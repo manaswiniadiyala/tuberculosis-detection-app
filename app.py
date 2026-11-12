@@ -167,28 +167,21 @@ if uploaded_file is not None:
     )
 
     image_tensor = preprocess_image(image).to(device)
-
+    
     label, probs = predict(model, image_tensor)
-
+    
     st.write(f"🔍 Prediction: **{label}**")
-    st.write(f"🫁 Tuberculosis confidence: {probs[0][0] * 100:.2f}%")
-    st.write(f"✅ Normal confidence: {probs[0][1] * 100:.2f}%")
-
-    # Show Grad-CAM ONLY for Tuberculosis
-    if label.strip().lower() == "tuberculosis":
-        st.subheader("Grad-CAM Visualization")
-
+    st.write(f"🫁 Tuberculosis confidence: {probs[0][1] * 100:.2f}%")
+    st.write(f"✅ Normal confidence: {probs[0][0] * 100:.2f}%")
+    
+    if label == "Tuberculosis":
         heatmap = generate_gradcam(model, image_tensor)
         overlay = overlay_gradcam(heatmap, image)
-
+    
         st.image(
             overlay,
             caption="Grad-CAM Overlay",
             use_column_width=True
         )
-
     else:
         st.info("Normal prediction. Grad-CAM visualization is not displayed.")
-
-else:
-    st.info("Please upload a chest X-ray image to begin diagnosis.")
