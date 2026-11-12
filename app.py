@@ -158,9 +158,9 @@ if uploaded_file is not None:
     image_tensor = preprocess_image(image).to(device)
 
     label, probs = predict(model, image_tensor)
-
     st.write(f"🔍 Prediction: **{label}**")
-    st.write(f"📊 Confidence Scores: {probs}")
+    st.write("Tuberculosis probability:", float(probs[0][0]))
+    st.write("Normal probability:", float(probs[0][1]))
 
     if label == "Tuberculosis":
 
