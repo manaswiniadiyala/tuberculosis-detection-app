@@ -146,6 +146,7 @@ def overlay_gradcam(heatmap, image):
     return np.uint8(255 * overlay)
 
 
+
 # Streamlit UI
 st.title("🫁 Tuberculosis Detection with Grad-CAM")
 
@@ -157,10 +158,8 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-
     image = Image.open(uploaded_file).convert("RGB")
 
-    # Display uploaded image
     st.image(
         image,
         caption="📷 Uploaded Image",
@@ -170,11 +169,14 @@ if uploaded_file is not None:
     image_tensor = preprocess_image(image).to(device)
 
     label, probs = predict(model, image_tensor)
-    st.write(f"🔍 Prediction: **{label}**")
-    st.write("Tuberculosis probability:", float(probs[0][0]))
-    st.write("Normal probability:", float(probs[0][1]))
 
-    if label == "Tuberculosis":
+    st.write(f"🔍 Prediction: **{label}**")
+    st.write(f"🫁 Tuberculosis confidence: {probs[0][0] * 100:.2f}%")
+    st.write(f"✅ Normal confidence: {probs[0][1] * 100:.2f}%")
+
+    # Show Grad-CAM ONLY for Tuberculosis
+    if label.strip().lower() == "tuberculosis":
+        st.subheader("Grad-CAM Visualization")
 
         heatmap = generate_gradcam(model, image_tensor)
         overlay = overlay_gradcam(heatmap, image)
@@ -186,7 +188,7 @@ if uploaded_file is not None:
         )
 
     else:
-        st.write("✅ No signs of tuberculosis. Grad-CAM not shown.")
+        st.info("Normal prediction. Grad-CAM visualization is not displayed.")
 
 else:
     st.info("Please upload a chest X-ray image to begin diagnosis.")
