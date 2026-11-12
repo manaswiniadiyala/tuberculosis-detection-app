@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 
 # Class labels: 0 = Tuberculosis, 1 = Normal
-class_labels = ['Tuberculosis', 'Normal']
+class_labels = ['Normal', 'Tuberculosis']
 
 # Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
