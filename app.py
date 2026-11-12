@@ -14,30 +14,30 @@ class_labels = ['Tuberculosis', 'Normal']
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-
 @st.cache_resource
 def load_model(model_path):
     model = models.densenet121(weights=None)
+
+    for module in model.modules():
+        if isinstance(module, torch.nn.ReLU):
+            module.inplace = False
+
     model.classifier = torch.nn.Linear(
         model.classifier.in_features, 2
     )
 
     state_dict = torch.load(model_path, map_location=device)
 
-    # Remove the "densenet." prefix from saved parameter names
     state_dict = {
         key.replace("densenet.", "", 1): value
         for key, value in state_dict.items()
     }
 
-    # Load all trained weights; raise an error if they don't match
     model.load_state_dict(state_dict, strict=True)
-
     model.to(device)
     model.eval()
 
     return model
-
 
 # Preprocess image
 def preprocess_image(image):
