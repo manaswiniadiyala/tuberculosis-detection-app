@@ -67,22 +67,23 @@ def predict(model, image_tensor):
 
 
 # Grad-CAM
+
 def generate_gradcam(model, image_tensor, target_class=None):
     gradients = []
     activations = []
 
-    def backward_hook(module, grad_input, grad_output):
-        gradients.append(grad_output[0])
+    target_layer = model.features.denseblock4
 
-    def forward_hook(module, input, output):
+    def forward_hook(module, inputs, output):
         activations.append(output)
+        output.register_hook(
+            lambda grad: gradients.append(grad)
+        )
 
-    target_layer = model.features[-1]
-
-    forward_handle = target_layer.register_forward_hook(forward_hook)
-    backward_handle = target_layer.register_full_backward_hook(backward_hook)
+    handle = target_layer.register_forward_hook(forward_hook)
 
     model.zero_grad()
+
     output = model(image_tensor)
 
     if target_class is None:
@@ -91,8 +92,7 @@ def generate_gradcam(model, image_tensor, target_class=None):
     class_score = output[0, target_class]
     class_score.backward()
 
-    forward_handle.remove()
-    backward_handle.remove()
+    handle.remove()
 
     grads_val = gradients[0]
     activations_val = activations[0]
@@ -106,7 +106,7 @@ def generate_gradcam(model, image_tensor, target_class=None):
     gradcam = F.interpolate(
         gradcam,
         size=(224, 224),
-        mode='bilinear',
+        mode="bilinear",
         align_corners=False
     )
 
@@ -116,7 +116,9 @@ def generate_gradcam(model, image_tensor, target_class=None):
     gradcam_max = gradcam.max()
 
     if gradcam_max > gradcam_min:
-        gradcam = (gradcam - gradcam_min) / (gradcam_max - gradcam_min)
+        gradcam = (gradcam - gradcam_min) / (
+            gradcam_max - gradcam_min
+        )
     else:
         gradcam = np.zeros_like(gradcam)
 
